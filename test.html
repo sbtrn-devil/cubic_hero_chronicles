@@ -1,0 +1,314 @@
+<html>
+<head>
+<meta charset="windows-1251">
+</head>
+<style>
+body {
+	font-family: monospace;
+	font-size: 20px; 
+	background-color: black;
+	color: white;
+	white-space: pre-line;
+}
+div {
+	margin: 0;
+}
+</style>
+<body style="width: 100%; display: flex; align-items: center; justify-content: center; margin: 0">
+<div style="position: relative; display: flex; flex-direction: column; align-items: center; margin: 0">
+<!-- location title layer -->
+<div style="display: flex; flex-flow: row nowrap">&nbsp;<span id="appLocationTitle">Title</span>&nbsp;</div>
+
+<!-- main display layer -->
+<div style="display: flex">
+	<!-- "device screen" -->
+	<canvas id="appCanvas"
+		width="512"
+		height="512"
+		style="display: flex; background-color: transparent">
+	</canvas>
+	<!-- intro popup (simple, top aligned) layer -->
+	<div style="display: flex; position: absolute; width: 100%; height: 100%; flex-flow: column; align-items: flex-start; justify-content: center; margin: 0">
+		<div style="display: flex; height: 25%"></div>
+		<div style="display: flex; width: 100%; height: 100%; flex-flow: row; align-items: flex-start; justify-content: center; margin: 0">
+			<div id="appPopupIntro" style="display: none; justify-content: center; flex-flow: row; background-color: #F5F5DC; color: black; text-align: center; border: 1px solid black; padding: 4px; margin: 8px">
+				<div id="appPopupIntroText"></div>
+			</div>
+		</div>
+	</div>
+	<!-- "rec" overlay layer -->
+	<div style="display: flex; position: absolute; width: 100%; height: 100%; flex-flow: row; align-items: flex-start; justify-content: flex-start; margin: 0">
+		<div id="appRecOverlay" style="display: none; justify-content: flex-start; flex-flow: row; color: red; text-align: left; padding: 4px">&#9679; REC</div>
+	</div>
+</div>
+
+<!-- status layer -->
+<div style="display: flex; flex-flow: row nowrap; width: 100%">
+	<div style="display: flex; flex-grow: 1; justify-content: left">
+		<div id="appHealthBar" style="background-color: white; display: flex; margin: 8px; width: 0%"></div>
+	</div>
+	<div style="display: flex; padding-left: 8px">
+	<span id="appTugriks" style="padding-right: 8px">0</span> <span style="color: gray">&#8366;</span>
+	</div>
+</div>
+
+<!-- soft keys layer -->
+<div style="display: flex; flex-flow: row nowrap; width: 100%">
+	<div style="border: 1px solid gray; display: flex; flex-flow: row nowrap; flex-grow: 1; width: 100%">
+		<div style="display: flex; padding-right: 8px; color: gray"><b>Z</b>:&gt;</div>
+		<div id="appLeftButtonText" style="display: flex; flex-grow: 1; justify-content: left"></div>
+	</div>
+	<div style="border: 1px solid gray; display: flex; flex-flow: row nowrap; flex-grow: 1; width: 100%">
+		<div id="appRightButtonText" style="display: flex; flex-grow: 1; justify-content: right; text-align: right"></div>
+		<div style="display: flex; padding-left: 8px; color: gray">&lt;:<b>X</b></div>
+	</div>
+</div>
+
+<!-- menu layer -->
+<div style="display: flex; position: absolute; width: 100%; height: 100%; flex-flow: column; align-items: center; justify-content: center; margin: 0">
+	<div id="appMenu" style="display: none; justify-content: center; flex-flow: column; background-color: #F5F5DC; color: black; text-align: center; border: 1px solid black; padding: 4px">
+	<div style="font-weight: bold">Header:</div>
+	<hr width="100%">
+	<div>&#9650;</div>
+	<div>Item</div>
+	<hr width="100%">
+	<div style="background-color: #C04000; color: white">Focused Item</div>
+	<div>&#9660;</div>
+	</div>
+</div>
+
+<!-- popup layer -->
+<div style="display: flex; position: absolute; width: 100%; height: 100%; flex-flow: column; align-items: center; justify-content: center; margin: 0">
+	<div id="appPopup" style="display: none; justify-content: center; flex-flow: row; background-color: #F5F5DC; color: black; text-align: center; border: 1px solid black; padding: 4px">
+		<div id="appPopupImgLeftHolder" style="display: none"><img id="appPopupImgLeft" style="width: 96px; height: 96px; image-rendering: crisp-edges; image-rendering: pixelated"></div>
+		<div style="display: flex; flex-flow: column; justify-content: flex-start; align-items: center; margin-left: 8px; margin-right: 8px">
+			<div id="appPopupHeader" style="display: none; font-weight: bold; margin-bottom: 8px"></div>
+			<div id="appPopupImgTopHolder" style="display: none"><img id="appPopupImgTop" style="width: 96px; height: 96px; image-rendering: crisp-edges; image-rendering: pixelated; margin-bottom: 8px"></div>
+			<div id="appPopupText"></div>
+		</div>
+		<div id="appPopupImgRightHolder" style="display: none"><img id="appPopupImgRight" style="width: 96px; height: 96px; image-rendering: crisp-edges; image-rendering: pixelated"></div>
+	</div>
+</div>
+
+</div>
+
+<!-- save/load layer -->
+<div id="appSaveLoad" style="display: none; flex-flow: column; align-self: stretch">
+<div style="display: flex">
+	<button id="appButtonLoad" style="display: flex; flex-grow: 1; text-align: center">Load &#x2191;</button>
+	<button id="appButtonSave" style="display: flex; flex-grow: 1; text-align: center">Save &#x2193;</button>
+</div>
+<textarea id="appLoadSaveData" style="display: flex; flex-grow: 1"></textarea>
+</div>
+
+</body>
+<script>
+var exports = new Object(); // to support nodejs exportability of res modules
+</script>
+<script src="entcore.js"></script>
+<script src="localize.js"></script>
+<script src="res_game_const.js"></script>
+<script src="res_gfx.js"></script>
+<!-- <script src="res_sfx.js">/*FUCK*/</script> -->
+<!-- ^FUCKING FIREFUX FUCKING CORS FUCKING MOZILLA FUCK THE FUCKING FUCKERS WHO'VE FUCKING INVENTED THIS FUCKING FUCKNOLOGY SECURITY FUCKURITY MY ASS WAS IT FUCKING TOO DIFFICULT TO ALLOW LOCAL cors.xml OR CREATE DB IN DOWNLOAD TARGET DIRECTORY CONFIRMATION OR FUCKEVER WHAT THE FUCK WHY WE NEED TO DO WITH FUCKING FUCKAROUNDS BECAUSE SOME 3RD PARTY FUCKTARDS CAN'T KEEP FUCKING TRACK ON FUCKING SECURITY DESIGN OF THEIR FUCKING FUCKTERNETS FUCKNLOADING FUCKTURES -->
+<script src="res_sfx.gen.js"></script>
+<script src="res_maptiles.js"></script>
+<script src="res_maps.gen.js"></script>
+<script src="res_animations.js"></script>
+<script src="res_uitext.js"></script>
+<script src="l00_app.js"></script>
+<script src="l00_ui.js"></script>
+<script src="l00_ll_gfx.js"></script>
+<script src="l00_ll_sfx.js"></script>
+<script src="l00_helpers.js"></script>
+<script src="l00_ll_animators.js"></script>
+<script src="l01_hl_gfx.js"></script>
+<script src="l01_hl_sfx.js"></script>
+<script src="l01_renderer.js"></script>
+<script src="l01_hl_animators.js"></script>
+<script src="l01_collisions.js"></script>
+<script src="l01_game.js"></script>
+<script src="l02_map.js"></script>
+<script src="l02_drawable_sprites.js"></script>
+<script src="l03_scene_parts.js"></script>
+<script src="l04_scene.js"></script>
+<script src="l05_hotspots.js"></script>
+<script src="l10_specs_exam_texts.js"></script>
+<script src="l10_doodads.js"></script>
+<script src="l10_particles.js"></script>
+<script src="l10_script_helpers.js"></script>
+<script src="l11_train_ctl.js"></script>
+<script src="l11_partizan_ctl.js"></script>
+<script src="l11_tractor_ctl.js"></script>
+<script src="l11_kreakl_ctl.js"></script>
+<script src="l11_turret.js"></script>
+<script src="l11_patroller.js"></script>
+<script src="l11_particle_spawner.js"></script>
+<script src="l12_specs_particles.js"></script>
+<script src="l12_specs_map_items.js"></script>
+<script src="l13_specs_hotspots.js"></script>
+<script src="l14_specs_inv_items.js"></script>
+<script src="l15_inventory_helpers.js"></script>
+<script src="l16_specs_scripts.js"></script>
+<script src="l20_ctld_hero.js"></script>
+<script src="l30_game_screen.js"></script>
+<script src="l40_start_screen.js"></script>
+<script src="l40_intro_screen.js"></script>
+<script src="l40_game_container.js"></script>
+
+<script>
+//entUI.comUI.setLocationTitleSync("@game_title:Хроники Кубического Героя v1.0");
+//entUI.comUI.setTugricsSync(20);
+
+entApp.comScene = entApp.newComponent(ComScene, {
+});
+
+async function runMainMenu(s) {
+	entUI.comUI.setLocationTitleSync("@game_title:Хроники Кубического Героя v1.0");
+	entUI.comUI.setTugricsSync(20);
+	entUI.comUI.setBarSync(1.0);
+	var haveSave = !!window.localStorage.getItem('gameState');
+
+	entUI.comUI.showMenuSync({
+		title: "@main_menu:Главное меню (\u2193\u2191Z)",
+		items: [
+			{
+				text: "@continue:Продолжить",
+				enabled: haveSave,
+				leftText: "@continue:Продолжить",
+				entLeftEvtTarget: s.ent,
+				leftEvtType: "mainMenu$continue",
+				leftEvtData: { },
+				selected: haveSave
+			},
+			{
+				text: "@new_game:Новая игра",
+				enabled: true,
+				leftText: "@new_game:Новая игра",
+				entLeftEvtTarget: s.ent,
+				leftEvtType: "mainMenu$newGame",
+				leftEvtData: { },
+				selected: !haveSave
+			}
+		]
+	});
+
+	try {
+		var [
+			evtNewGame,
+			evtContinue
+		] = await s.anyOf(
+			s.ent.event("mainMenu$newGame"),
+			s.ent.event("mainMenu$continue")
+		);
+
+		if (evtNewGame) {
+			return "new-game";
+		}
+
+		if (evtContinue) {
+			return "continue";
+		}
+	} finally {
+		entUI.comUI.hideMenuSync();
+	}
+}
+
+var gameState;
+var gcomGameContainer;
+async function runGame(s, { newGame = true }) {
+	await llsfx$ctx.resume();
+
+	// set up the game bootstrap
+	var entGame = s.ent.newSubEntity();
+	var comGameContainer = gcomGameContainer = entGame.newComponent(ComGameContainer, {});
+	await comGameContainer.loadGameResources(s, {});
+	if (newGame) {
+		comGameContainer.entContainer.comGame.resetGame();
+		comGameContainer.gameState = gameState = {
+			//currentScreen: "sC3", // sB0, sC3, sD2, sB1, sB3, sC1
+			//heroPoint: { x: 128, y: 400 },
+			//heroPoint: { x: 128, y: 200 },
+		};
+		var comIntroScreen = s.ent.newComponent(ComIntroScreen, {});
+		try {
+			await comIntroScreen.showIntro(s);
+		} finally {
+			comIntroScreen.dispose();
+		}
+	} else {
+		comGameContainer.entContainer.comGame.loadGame();
+	}
+
+	comGameContainer.entContainer.comGame.saveCheckpoint();
+	for (;;) {
+		comGameContainer.entContainer.comGame.restoreCheckpoint();
+		gameState = comGameContainer.entContainer.comGame.gameState; // to keep the link
+
+		var gameOutcome = await comGameContainer.gameLoop(s, {});
+		if (gameOutcome.action == "gameOver" && gameOutcome.win) {
+			await comGameContainer.comGameScreen.clear(s, { transOutVeilType: "black-in" });
+			comGameContainer.entContainer.comGame.resetGame();
+			entGame.dispose();
+			await comGameContainer.unloadGameResources(s, {});
+			return;
+		}
+		//var heroX = 128, heroY = 128;
+	}
+
+}
+
+function postGameAction(action) {
+	gcomGameContainer.comGameScreen.entScreen.postEvent("gameAction", action);
+}
+
+function giveItem(...itemIds) {
+	for (var itemId of itemIds) {
+		if (ResInventoryItems[itemId]) {
+			gcomGameContainer.comGameScreen.scriptTools.takePickableItem({
+				gs: gameState,
+				itemId: itemId,
+				updateScene: true
+			});
+		}
+	}
+}
+
+async function main(s) {
+	await entApp.comScene.loadOrUnloadResources(s,
+		...hlgfxLoadGFXGroup("gfxGrpAlways"));
+
+	MAIN_LOOP: for (;;) {
+		var comStartScreen = s.ent.newComponent(ComStartScreen, {});
+		await comStartScreen.startShowing(s);
+		var choice = await runMainMenu(s);
+		await comStartScreen.stopShowing(s);
+		comStartScreen.dispose();
+		switch (choice) {
+		case "new-game":
+			await runGame(s, { newGame: true });
+			break;
+
+		case "continue":
+			await runGame(s, { newGame: false });
+			break;
+
+		default:
+			// unexpected termination
+			break MAIN_LOOP;
+		}
+	}
+
+	entUI.comUI.popupModal({
+		type: "plain",
+		header: "Engine fuckup",
+		text: "The game engine has fatally fucked up, refresh the page",
+		enableSkip: false
+	});
+}
+
+entApp.newScript().run(main);
+
+</script>
+
+</html>

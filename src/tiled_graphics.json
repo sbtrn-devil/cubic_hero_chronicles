@@ -1,0 +1,24 @@
+{ "columns":0,
+ "grid":
+    {
+     "height":1,
+     "orientation":"orthogonal",
+     "width":1
+    },
+ "margin":0,
+ "name":"graphics",
+ "spacing":0,
+ "tilecount":2,
+ "tiledversion":"2021.02.15",
+ "tileheight":128,
+ "tiles":[
+        {
+         "id":0,
+         "image":"..\/res\/icon_fsb_mib.png",
+         "imageheight":48,
+         "imagewidth":48
+        }],
+ "tilewidth":64,
+ "type":"tileset",
+ "version":1.5
+}
